@@ -1,0 +1,22 @@
+name: 'JS autograde'
+description: 'autograde js project'
+inputs:
+  grade:
+    description: 'token'
+    default: ''
+    required: true
+  url:
+    description: 'course url'
+    default: ''
+    required: true
+  token:
+    description: 'user token'
+    default: ''
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.grade }}
+    - ${{ inputs.url }}
+    - ${{ inputs.token }}

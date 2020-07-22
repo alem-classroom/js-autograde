@@ -31,10 +31,6 @@ export INPUT_GRADE="good job, contact me @frozen6heart"
 export INPUT_URL="good job, contact me @frozen6heart"
 export INPUT_TOKEN="good job, contact me @frozen6heart"
 
-JOB=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs)
-ID=$(echo $JOB | jq '.jobs[0].id' )
-LOGS_URL="https://github.com/alem-classroom/student-python-introduction-Zulbukharov/commit/${GITHUB_SHA}/checks/${ID}/logs"
-
 TEST=${COURSE_TEST_URL##*/test-}
 TEST_FULL="$TEST/test-"
 SOLUTION="solution"
@@ -56,8 +52,9 @@ find $TEST -type f -name '*test*' -print0 | xargs -n 1 -0 -I {} bash -c 'set -e;
 z=$(find $TEST -mindepth 1 -maxdepth 1 -type d -name "test*" -print0 | xargs -n 1 -0 -I {} bash -c 't={}; printf "${t##$0/test-}\n"' $TEST)
 
 send_result(){
-    # apikey user lesson status
-    curl -s -X POST "https://lrn.dev/api/service/grade" -H "x-grade-secret: ${1}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"username\":\"${2}\", \"lesson\":\"${3}\", \"status\": \"${4}\", \"logs_url\": \"${LOGS_URL}\"}" > /dev/null
+    data=$(jq -aRs . <<< ${5})
+    # apikey user lesson status logs
+    curl -s -X POST "https://lrn.dev/api/service/grade" -H "x-grade-secret: ${1}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"username\":\"${2}\", \"lesson\":\"${3}\", \"status\": \"${4}\", \"logs\": ${data}}" > /dev/null
 }
 
 for LESSON_NAME in $z
@@ -65,15 +62,16 @@ do
 
     FILENAME=$(find "$SOLUTION/$LESSON_NAME" -type f -name "*test*" -print0 | xargs -n 1 -0 -I {} bash -c 't={}; printf "$t"')
     set +e
-    node $FILENAME
+    result=$(node $FILENAME)
     last="$?"
+    echo ${result}
     set -e
     if [[ $last -eq 0 ]]; then
         printf "✅ $LESSON_NAME-$TEST tests passed 💞\n"
-        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "done"
+        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "done" "${result}"
     else
         printf "🚫 $LESSON_NAME-$TEST tests failed 💔\n"
-        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "failed"
+        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "failed" "${result}"
     fi
 
 done

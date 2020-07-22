@@ -52,8 +52,8 @@ find $TEST -type f -name '*test*' -print0 | xargs -n 1 -0 -I {} bash -c 'set -e;
 z=$(find $TEST -mindepth 1 -maxdepth 1 -type d -name "test*" -print0 | xargs -n 1 -0 -I {} bash -c 't={}; printf "${t##$0/test-}\n"' $TEST)
 
 send_result(){
-    # apikey user lesson done 
-    curl -s -X POST "https://lrn.dev/api/service/grade" -H "x-grade-secret: ${1}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"username\":\"${2}\", \"lesson\":\"${3}\", \"status\": \"${4}\"}" > /dev/null
+    # apikey user lesson status logs
+    curl -s -X POST "https://lrn.dev/api/service/grade" -H "x-grade-secret: ${1}" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"username\":\"${2}\", \"lesson\":\"${3}\", \"status\": \"${4}\", \"logs\": \"${5}\"}" > /dev/null
 }
 
 for LESSON_NAME in $z
@@ -61,14 +61,16 @@ do
 
     FILENAME=$(find "$SOLUTION/$LESSON_NAME" -type f -name "*test*" -print0 | xargs -n 1 -0 -I {} bash -c 't={}; printf "$t"')
     set +e
-    node $FILENAME
+    result=$(node $FILENAME)
     last="$?"
+    echo $result
     set -e
     if [[ $last -eq 0 ]]; then
         printf "✅ $LESSON_NAME-$TEST tests passed 💞\n"
-        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "done"
+        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "done" $result
     else
         printf "🚫 $LESSON_NAME-$TEST tests failed 💔\n"
+        send_result $API_KEY $GITHUB_ACTOR $LESSON_NAME-$TEST "failed" $result
     fi
 
 done

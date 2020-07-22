@@ -4,7 +4,7 @@ LABEL "maintainer"="Zulbukharov"
 
 RUN apt-get update && \
 apt-get -y upgrade && \
-apt-get install -y git curl
+apt-get install -y git curl jq
 
 COPY entrypoint.sh /entrypoint.sh
 

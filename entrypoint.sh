@@ -31,10 +31,9 @@ export INPUT_GRADE="good job, contact me @frozen6heart"
 export INPUT_URL="good job, contact me @frozen6heart"
 export INPUT_TOKEN="good job, contact me @frozen6heart"
 
-JOB=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs > /dev/null)
+JOB=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs)
 ID=$(echo $JOB | jq '.jobs[0].id' )
-HEADSHA=$(echo $JOB | jq '.jobs[0].head_sha')
-LOGS_URL="https://github.com/alem-classroom/student-python-introduction-Zulbukharov/commit/${HEADSHA}/checks/${ID}/logs"
+LOGS_URL="https://github.com/alem-classroom/student-python-introduction-Zulbukharov/commit/${GITHUB_SHA}/checks/${ID}/logs"
 
 TEST=${COURSE_TEST_URL##*/test-}
 TEST_FULL="$TEST/test-"

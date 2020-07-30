@@ -58,7 +58,7 @@ send_result(){
 }
 
 for project in $curl_js; do
-    LESSON_NAME=$(echo $project | jq -r '.name' | sed s/-docker//g)
+    LESSON_NAME=$(echo $project | jq -r '.name' | sed s/-js-intro//g)
     echo $LESSON_NAME
 
     FILENAME=$(find "$SOLUTION/$LESSON_NAME" -type f -name "*test*" -print0 | xargs -n 1 -0 -I {} bash -c 't={}; printf "$t"')
